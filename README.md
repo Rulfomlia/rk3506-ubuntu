@@ -13,7 +13,7 @@ BOARD | Tested OK with luckfox-config |
 | Luckfox Lyra PLUS | Yes | 
 | Luckfox Lyra Zero W | Yes |
 | Luckfox Lyra Pi W emmc| Yes |
-| ArmSoM Forge 1 | Made progress with uckfox-config for the availabe RM_IO gpio for this board - see below *|
+| ArmSoM Forge 1 | Made progress with luckfox-config for the availabe RM_IO gpio for this board - see below *|
 
 Supported Boards
 Board Name | SD/EMMC |  Defconfig |
@@ -73,6 +73,35 @@ Board cator more for CanBus/Flexibus use than RM_IO gpio
 <img width="1178" height="985" alt="Screenshot_20250822_114824" src="https://github.com/user-attachments/assets/567eced2-b9ec-4428-b498-12ce52f47dac" />
 
 Key: Green=GPIO, Blue=RM_IO, Red=Power, Black=GND
+
+
+```
+RMIO pins
+                Armsom Forge1 RK3506J
+                     + -USB- +
+-         -  3V3_OUT | 1   2 | VSYS     -         -
+- RM_IO4  - GPIO0_A4 | 3   4 | VSYS     -         -
+- RM_IO5  - GPIO0_A5 | 5   6 | GND      -         -
+- RM_IO31 - GPIO1_D3 | 7   8 |*GPIO0_C6 - RM_IO22 -
+-         -      GND | 9  10 |*GPIO0_C7 - RM_IO23 -
+- RM_IO30 - GPIO1_D2 | 11 12 | GPIO1_D1 - RM_IO29 -
+-         -          | 13 14 | GND      -         -
+- RM_IO28 - GPIO1_C3 | 15 16 | GPIO1_B4 - RM_IO27 -
+-         -  3V3_OUT | 17 18 |          -         -
+-         -          | 19 20 | GND      -         -
+-         -          | 21 22 |          -         -
+-         -          | 23 24 |          -         -
+-         -      GND | 25 26 | GPIO1_B3 - RM_IO26 -
+-         -          | 27 28 | GPIO1_B2 - RM_IO25 -
+-         -          | 29 30 | GND      -         -
+-         -          | 31 32 |          -         -
+-         -          | 33 34 | GND      -         -
+-         -          | 35 36 |          -         -
+-         -          | 37 38 |          -         -
+-         -      GND | 39 40 |          -         -
+                     + - + - +
+```
+
 
 ```
 root@forge1:~# cat /sys/kernel/debug/gpio
