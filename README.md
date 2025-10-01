@@ -59,6 +59,8 @@ Luckfox Lyra boards Specifications
 
 <img width="1044" height="810" alt="Screenshot_20250811_221648" src="https://github.com/user-attachments/assets/b02b38e1-ece0-4d57-887b-de53b5d9d7d0" />
 
+<img width="960" height="686" alt="image" src="https://github.com/user-attachments/assets/750a08c5-6305-41ad-ace7-5f2db111cbc3" />
+
 4G LTE howto
 ```
 nmcli connection add type gsm ifname '*' apn 'internet' connection.autoconnect yes
@@ -133,6 +135,8 @@ root@luckfox:~# lsusb -tv
 Luckfox Lyra pinout
 
 https://wiki.luckfox.com/Luckfox-Lyra/Pinout/
+
+<img width="960" height="491" alt="image" src="https://github.com/user-attachments/assets/1165ee4a-bf58-4776-9caa-3a51aacdc886" />
 
 Forge1 RM_IO pinout
 
