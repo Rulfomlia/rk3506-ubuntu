@@ -76,7 +76,7 @@ cdc-wdm0  gsm       connected               gsm
 lo        loopback  connected (externally)  lo                 
 end0      ethernet  unavailable             --
 
-Get Location
+Get Location (Guess you should really connect up a GPS antenna, but it not supplied)
 mmcli -m 0 --location-status
   ------------------------
   Location | capabilities: 3gpp-lac-ci, gps-raw, gps-nmea, gps-unmanaged, agps-msa, 
@@ -354,6 +354,8 @@ Kernel 6.1.99 Headers
 https://github.com/markbirss/linux-6.1.99
 https://github.com/markbirss/linux-6.1.99/releases/download/1/linux-headers-6.1.99_6.1.99-3_armhf.deb
 
+Flash Erase and switch storage
+https://github.com/markbirss/rkdeveloptool
 ```
 
 #IMPORTANT NOTE
