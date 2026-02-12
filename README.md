@@ -385,6 +385,10 @@ https://github.com/markbirss/linux-6.1.99/releases/download/1/linux-headers-6.1.
 Flash Erase and switch storage
 https://github.com/markbirss/rkdeveloptool
 ```
+# Linux Host Internet Connection Sharing over USB
+
+<img width="703" height="759" alt="image" src="https://github.com/user-attachments/assets/a429b49c-476f-4656-90d2-0e7c2697276f" />
+
 
 #IMPORTANT NOTE
 This SDK is provided for non commercial use only
