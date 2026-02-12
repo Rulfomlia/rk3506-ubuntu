@@ -387,8 +387,7 @@ https://github.com/markbirss/rkdeveloptool
 ```
 # Linux Host Internet Connection Sharing over USB
 
-<img width="703" height="759" alt="image" src="https://github.com/user-attachments/assets/a429b49c-476f-4656-90d2-0e7c2697276f" />
-
+<img width="696" height="694" alt="image" src="https://github.com/user-attachments/assets/aecd01fe-b5cf-411b-ad0d-a4eb04512c07" />
 
 #IMPORTANT NOTE
 This SDK is provided for non commercial use only
