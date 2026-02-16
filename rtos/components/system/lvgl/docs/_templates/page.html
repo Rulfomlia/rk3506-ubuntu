@@ -25,6 +25,8 @@ function add_version_selector()
         .then(res => res.text())
         .then(text => {
             const versions = text.split("\n").filter(version => version.trim().length > 0);
+            // Store allowed versions globally for later validation
+            window.LVGL_VERSIONS = versions;
             let p = document.getElementById("rtd-search-form").parentElement;
             p.innerHTML = `
             <select name="versions" id="versions" onchange="ver_sel()" style="border-radius:5px; margin-bottom:15px">
@@ -41,7 +43,10 @@ function add_version_selector()
 function ver_sel()
 {
   var x = document.getElementById("versions").value;
-  window.location.href = window.location.protocol + "//" + window.location.host + "/" + x + "/";
+  // Only allow navigation to known versions loaded from the server
+  if (Array.isArray(window.LVGL_VERSIONS) && window.LVGL_VERSIONS.includes(x)) {
+    window.location.href = window.location.protocol + "//" + window.location.host + "/" + x + "/";
+  }
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
