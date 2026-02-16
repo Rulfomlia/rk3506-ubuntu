@@ -2018,6 +2018,14 @@ class CommandLineBuilds(TemplateView):
         logs_dir = request.POST.get('dir')
         all_files =  request.POST.get('all')
 
+        # Normalize and validate logs_dir to mitigate path traversal
+        if logs_dir is None:
+            raise Exception("Missing logs directory")
+        safe_logs_dir = os.path.normpath(logs_dir)
+        # Disallow absolute paths to avoid escaping expected log roots
+        if os.path.isabs(safe_logs_dir):
+            raise Exception("Invalid logs directory path")
+
         # check if a build is already in progress
         if Build.objects.filter(outcome=Build.IN_PROGRESS):
             messages.add_message(
@@ -2039,7 +2047,15 @@ class CommandLineBuilds(TemplateView):
                     if imported_files.filter(name=file.get('name')).exists():
                         imported_files.filter(name=file.get('name'))[0].imported = True
                     else:
-                        with open("{}/{}".format(logs_dir, file.get('name'))) as eventfile:
+                        filename = file.get('name')
+                        if not filename:
+                            raise Exception("Missing file name for log import")
+                        # Build a normalized path under the validated logs directory
+                        candidate_path = os.path.normpath(os.path.join(safe_logs_dir, filename))
+                        # Ensure the resulting path is within the logs directory
+                        if not (candidate_path == safe_logs_dir or candidate_path.startswith(safe_logs_dir + os.sep)):
+                            raise Exception("Invalid log file path")
+                        with open(candidate_path) as eventfile:
                             # load variables from the first line
                             variables = None
                             while line := eventfile.readline().strip():
