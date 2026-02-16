@@ -2122,7 +2122,16 @@ class CommandLineBuilds(TemplateView):
                             fs.save(file.name, file)
                         toasterui.main(player, player, params)
                     else:
-                        with open("{}/{}".format(safe_logs_dir, file)) as eventfile:
+                        fullpath = os.path.normpath(os.path.join(safe_logs_dir, file))
+                        safe_root = os.path.abspath(safe_logs_dir)
+                        if os.path.commonpath([safe_root, fullpath]) != safe_root:
+                            messages.add_message(
+                                self.request,
+                                messages.ERROR,
+                                "The specified event log file is invalid."
+                            )
+                            return HttpResponseRedirect("/toastergui/cmdline/")
+                        with open(fullpath) as eventfile:
                             # load variables from the first line
                             variables = None
                             while line := eventfile.readline().strip():
