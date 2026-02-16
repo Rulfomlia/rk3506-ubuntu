@@ -16,6 +16,10 @@ import bb.asyncrpc
 
 logger = logging.getLogger("hashserv.server")
 
+# Parameters for password/token hashing. Use PBKDF2-HMAC with SHA-256.
+# These values can be adjusted if stronger hashing is desired in future.
+TOKEN_PBKDF2_ITERS = 100000
+TOKEN_DKLEN = 32
 
 # This permission only exists to match nothing
 NONE_PERM = "@none"
@@ -166,10 +170,25 @@ def new_salt():
 
 
 def hash_token(algo, salt, token):
-    h = hashlib.new(algo)
-    h.update(salt.encode("utf-8"))
-    h.update(token.encode("utf-8"))
-    return ":".join([algo, salt, h.hexdigest()])
+    """
+    Derive a password/token hash using PBKDF2-HMAC.
+
+    The returned string format is:
+        "<algo>:<salt>:<iterations>:<hexdigest>"
+    where:
+        - algo is the underlying hash name used by pbkdf2_hmac (e.g. "sha256")
+        - salt is a hex-encoded random salt
+        - iterations is the PBKDF2 iteration count
+        - hexdigest is the hex-encoded derived key
+    """
+    dk = hashlib.pbkdf2_hmac(
+        algo,
+        token.encode("utf-8"),
+        salt.encode("utf-8"),
+        TOKEN_PBKDF2_ITERS,
+        dklen=TOKEN_DKLEN,
+    )
+    return ":".join([algo, salt, str(TOKEN_PBKDF2_ITERS), dk.hex()])
 
 
 def permissions(*permissions, allow_anon=True, allow_self_service=False):
