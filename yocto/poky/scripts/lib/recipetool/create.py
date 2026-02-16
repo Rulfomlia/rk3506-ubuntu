@@ -317,7 +317,7 @@ def determine_from_url(srcuri):
     pv = None
     parseres = urlparse(srcuri.lower().split(';', 1)[0])
     if parseres.path:
-        if 'github.com' in parseres.netloc:
+        if parseres.hostname in ('github.com', 'www.github.com'):
             res = re.search(r'.*/(.*?)/archive/(.*)-final\.(tar|zip)', parseres.path)
             if res:
                 pn = res.group(1).strip().replace('_', '-')
