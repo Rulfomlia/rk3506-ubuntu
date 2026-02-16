@@ -54,6 +54,28 @@ from toastermain.logs import log_view_mixin
 
 logger = logging.getLogger("toaster")
 
+# Base directory for event logs; user-supplied paths are constrained under this root
+LOGS_ROOT = os.path.abspath(os.environ.get("TOASTER_LOGS_ROOT", os.getcwd()))
+
+
+def _get_safe_logs_dir(logs_dir_raw):
+    """
+    Ensure that the user-supplied logs_dir is resolved to a path within LOGS_ROOT.
+    Raises ValueError if the resulting path would escape LOGS_ROOT or is empty.
+    """
+    if not logs_dir_raw:
+        raise ValueError("Missing logs directory")
+
+    # Construct path under the trusted root and normalize it
+    candidate_path = os.path.normpath(os.path.join(LOGS_ROOT, logs_dir_raw))
+
+    # Ensure the normalized path is still within LOGS_ROOT
+    logs_root_norm = os.path.normpath(LOGS_ROOT)
+    if os.path.commonpath([logs_root_norm, candidate_path]) != logs_root_norm:
+        raise ValueError("Invalid logs directory")
+
+    return candidate_path
+
 # Project creation and managed build enable
 project_enable = ('1' == os.environ.get('TOASTER_BUILDSERVER'))
 is_project_specific = ('1' == os.environ.get('TOASTER_PROJECTSPECIFIC'))
@@ -2015,8 +2037,18 @@ class CommandLineBuilds(TemplateView):
         return context
 
     def post(self, request, **kwargs):
-        logs_dir = request.POST.get('dir')
+        logs_dir_raw = request.POST.get('dir')
         all_files =  request.POST.get('all')
+
+        try:
+            safe_logs_dir = _get_safe_logs_dir(logs_dir_raw)
+        except ValueError:
+            messages.add_message(
+                self.request,
+                messages.ERROR,
+                "The specified logs directory is invalid."
+            )
+            return HttpResponseRedirect("/toastergui/cmdline/")
 
         # check if a build is already in progress
         if Build.objects.filter(outcome=Build.IN_PROGRESS):
@@ -2039,7 +2071,7 @@ class CommandLineBuilds(TemplateView):
                     if imported_files.filter(name=file.get('name')).exists():
                         imported_files.filter(name=file.get('name'))[0].imported = True
                     else:
-                        with open("{}/{}".format(logs_dir, file.get('name'))) as eventfile:
+                        with open("{}/{}".format(safe_logs_dir, file.get('name'))) as eventfile:
                             # load variables from the first line
                             variables = None
                             while line := eventfile.readline().strip():
@@ -2085,12 +2117,12 @@ class CommandLineBuilds(TemplateView):
                         file.seek(0)
                         params = namedtuple('ConfigParams', ['observe_only'])(True)
                         player = eventreplay.EventPlayer(file, variables)
-                        if not os.path.exists('{}/{}'.format(logs_dir, file.name)):
-                            fs = FileSystemStorage(location=logs_dir)
+                        if not os.path.exists('{}/{}'.format(safe_logs_dir, file.name)):
+                            fs = FileSystemStorage(location=safe_logs_dir)
                             fs.save(file.name, file)
                         toasterui.main(player, player, params)
                     else:
-                        with open("{}/{}".format(logs_dir, file)) as eventfile:
+                        with open("{}/{}".format(safe_logs_dir, file)) as eventfile:
                             # load variables from the first line
                             variables = None
                             while line := eventfile.readline().strip():
