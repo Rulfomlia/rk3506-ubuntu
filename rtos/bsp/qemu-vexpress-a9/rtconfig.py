@@ -1,9 +1,15 @@
 import os
 
 import uuid
+import hashlib
 def get_mac_address(): 
-    mac=uuid.UUID(int = uuid.getnode()).hex[-12:] 
-    return "#define AUTOMAC".join([str(int(e/2) + 1) + '  0x' + mac[e:e+2] + '\n' for e in range(5,11,2)])
+    # Obtain the raw MAC address as a 12-character hex string
+    mac = uuid.UUID(int=uuid.getnode()).hex[-12:]
+    # Derive a non-reversible surrogate from the MAC to avoid storing it in clear text
+    mac_hashed = hashlib.sha256(mac.encode('ascii')).hexdigest()[:12]
+    return "#define AUTOMAC".join(
+        [str(int(e / 2) + 1) + '  0x' + mac_hashed[e:e + 2] + '\n' for e in range(5, 11, 2)]
+    )
 
 header = '''
 #ifndef __MAC_AUTO_GENERATE_H__
