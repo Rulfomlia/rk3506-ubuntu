@@ -54,6 +54,24 @@ from toastermain.logs import log_view_mixin
 
 logger = logging.getLogger("toaster")
 
+
+def _safe_logs_dir(user_dir: str) -> str:
+    """
+    Resolve a user-supplied logs directory safely within a fixed base directory.
+    """
+    # Base directory for log imports; adjust as appropriate for deployment.
+    base_root = os.path.realpath(os.path.join(dirname(__file__), "..", "logs"))
+    if not user_dir:
+        return base_root
+    # Disallow absolute paths provided by the user.
+    if os.path.isabs(user_dir):
+        raise ValueError("Absolute paths are not allowed for logs directory")
+    candidate = os.path.realpath(os.path.normpath(os.path.join(base_root, user_dir)))
+    # Ensure the resolved path is still under base_root.
+    if not (candidate == base_root or candidate.startswith(base_root + os.sep)):
+        raise ValueError("Logs directory is outside the allowed root")
+    return candidate
+
 # Project creation and managed build enable
 project_enable = ('1' == os.environ.get('TOASTER_BUILDSERVER'))
 is_project_specific = ('1' == os.environ.get('TOASTER_PROJECTSPECIFIC'))
@@ -2015,7 +2033,8 @@ class CommandLineBuilds(TemplateView):
         return context
 
     def post(self, request, **kwargs):
-        logs_dir = request.POST.get('dir')
+        raw_logs_dir = request.POST.get('dir')
+        logs_dir = _safe_logs_dir(raw_logs_dir)
         all_files =  request.POST.get('all')
 
         # check if a build is already in progress
@@ -2039,7 +2058,10 @@ class CommandLineBuilds(TemplateView):
                     if imported_files.filter(name=file.get('name')).exists():
                         imported_files.filter(name=file.get('name'))[0].imported = True
                     else:
-                        with open("{}/{}".format(logs_dir, file.get('name'))) as eventfile:
+                        safe_path = os.path.realpath(os.path.join(logs_dir, file.get('name')))
+                        if not (safe_path == logs_dir or safe_path.startswith(logs_dir + os.sep)):
+                            raise ValueError("Requested file is outside the allowed logs directory")
+                        with open(safe_path) as eventfile:
                             # load variables from the first line
                             variables = None
                             while line := eventfile.readline().strip():
@@ -2085,12 +2107,18 @@ class CommandLineBuilds(TemplateView):
                         file.seek(0)
                         params = namedtuple('ConfigParams', ['observe_only'])(True)
                         player = eventreplay.EventPlayer(file, variables)
-                        if not os.path.exists('{}/{}'.format(logs_dir, file.name)):
+                        safe_upload_path = os.path.realpath(os.path.join(logs_dir, file.name))
+                        if not (safe_upload_path == logs_dir or safe_upload_path.startswith(logs_dir + os.sep)):
+                            raise ValueError("Uploaded file path is outside the allowed logs directory")
+                        if not os.path.exists(safe_upload_path):
                             fs = FileSystemStorage(location=logs_dir)
                             fs.save(file.name, file)
                         toasterui.main(player, player, params)
                     else:
-                        with open("{}/{}".format(logs_dir, file)) as eventfile:
+                        safe_path = os.path.realpath(os.path.join(logs_dir, file))
+                        if not (safe_path == logs_dir or safe_path.startswith(logs_dir + os.sep)):
+                            raise ValueError("Requested file is outside the allowed logs directory")
+                        with open(safe_path) as eventfile:
                             # load variables from the first line
                             variables = None
                             while line := eventfile.readline().strip():
